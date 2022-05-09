@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <title>Minmal Image Resizer</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+</head>
+
+<body>
+    <h1>Minmal Image Resizer</h1>
+
+    <div>
+        <h2>Settings</h2>
+
+        <form>
+            <div>
+                <label for="width">Width (px):</label>
+                <input id="width" type="text" required="true" placeholder="default: 905" pattern="\d+">
+            </div>
+
+            <div>
+                <label for="height">Height (px):</label>
+                <input id="height" type="text" required="true" placeholder="default: 500" pattern="\d+">
+            </div>
+
+            <div>
+                <label for="mode">Mode:</label>
+                <select id="mode">
+                    <option value="cover">Cover</option>
+                    <option value="contain">Contain</option>
+                    <option value="exact">Exact</option>
+                </select>
+            </div>
+
+            <div>
+                <label for="files">Files</label>
+                <input id="files" type="file" accept="image/*", multiple="true">
+            </div>
+        </form>
+    </div>
+
+    <div>
+        <h2>Output images</h2>
+        <div id="output-image-container">
+            <p>No output available yet.</p>
+        </div>
+    </div>
+
+
+    <script src="minmal-image-resizer.js"></script>
+</body>
+
+</html>
