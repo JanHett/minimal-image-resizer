@@ -11,6 +11,8 @@ class MinimalImageResizer {
         this.width_input.addEventListener("input", this.update_previews.bind(this))
         this.height_input.addEventListener("input", this.update_previews.bind(this))
         this.mode_input.addEventListener("input", this.update_previews.bind(this))
+
+        this.update_previews()
     }
 
     get_input_files() {
@@ -34,16 +36,18 @@ class MinimalImageResizer {
     }
 
     update_previews() {
-        console.log(this)
-        this.output_container.innerHTML = ""
         const input_files = this.get_input_files()
+        if (input_files.length === 0) {
+            this.output_container.innerHTML = "<p>Select images to resize to see preview of output</p>"
+            return;
+        }
+        this.output_container.innerHTML = ""
         const width = this.get_current_width()
         const height = this.get_current_height()
         const canvas_aspect = width / height
 
         for (const file_obj of input_files) {
             const editing_canvas = document.createElement("canvas");
-            console.log(file_obj)
             editing_canvas.dataset.filename = file_obj.name
             
             this.output_container.appendChild(editing_canvas)
