@@ -1,3 +1,6 @@
 [submodule "external/jszip"]
 	path = external/jszip
 	url = https://github.com/Stuk/jszip
+[submodule "external/twgl"]
+	path = external/twgl
+	url = https://github.com/greggman/twgl.js.git
