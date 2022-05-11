@@ -133,11 +133,14 @@ function gaussian(image, sigma) {
  * @return {Canvas} a canvas of the same size as `image` containing the filtered
  * pixels
  */
-function lpf_image_for_downsampling(image, target_size) {
+function lpf_image_for_downsampling(image, target_size, filter_factor) {
     const width_scale = target_size[0] / image.width
     const height_scale = target_size[1] / image.height
 
-    return gaussian(image, [1 / (2 * width_scale), 1 / (2 * height_scale)])
+    return gaussian(image, [
+        1 / (filter_factor * width_scale),
+        1 / (filter_factor * height_scale)
+    ])
 }
 
 class MinimalImageResizer {
@@ -146,6 +149,7 @@ class MinimalImageResizer {
         this.width_input = document.getElementById("width")
         this.height_input = document.getElementById("height")
         this.mode_input = document.getElementById("mode")
+        this.lpf_factor_input = document.getElementById("lpf-factor")
         this.format_input = document.getElementById("format")
         this.quality_input = document.getElementById("quality")
 
@@ -155,6 +159,7 @@ class MinimalImageResizer {
         this.width_input.addEventListener("input", this.update_previews.bind(this))
         this.height_input.addEventListener("input", this.update_previews.bind(this))
         this.mode_input.addEventListener("input", this.update_previews.bind(this))
+        this.lpf_factor_input.addEventListener("input", this.update_previews.bind(this))
         this.format_input.addEventListener("input", this.update_previews.bind(this))
         this.quality_input.addEventListener("input", this.update_previews.bind(this))
 
@@ -175,6 +180,11 @@ class MinimalImageResizer {
 
     get_current_mode() {
         return this.mode_input.value
+    }
+
+    get_current_lpf_factor() {
+        const f = parseFloat(this.lpf_factor_input.value)
+        return f >= 0 ? f : 4
     }
 
     get_current_format() {
@@ -271,8 +281,15 @@ class MinimalImageResizer {
                         }
                     })()
 
-                    let img_to_draw = lpf_image_for_downsampling(img,
-                        [image_pos.width, image_pos.height])
+                    const lpf_factor = this.get_current_lpf_factor()
+
+                    let img_to_draw
+                    if (lpf_factor > 0) {
+                        img_to_draw = lpf_image_for_downsampling(img,
+                        [image_pos.width, image_pos.height], lpf_factor)
+                    } else {
+                        img_to_draw = img
+                    }
 
                     editing_ctx.drawImage(img_to_draw,
                         image_pos.left,
