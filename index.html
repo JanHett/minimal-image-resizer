@@ -11,7 +11,7 @@
     <h1>Minmal Image Resizer</h1>
 
     <div>
-        <h2>Settings</h2>
+        <h2>Output Settings</h2>
 
         <form>
             <div>
@@ -34,6 +34,19 @@
             </div>
 
             <div>
+                <label for="format">Format:</label>
+                <select id="format">
+                    <option value="image/jpeg">JPEG (for photos)</option>
+                    <option value="image/png">PNG (for graphics)</option>
+                </select>
+
+                <label for="quality">Quality (ignored for PNG, legal values are [0, 1]):</label>
+                <input id="quality" type="text" placeholder="default: 0.8" pattern="[01](?:\.\d+)?">
+            </div>
+
+            <h2>Input Data</h2>
+
+            <div>
                 <label for="files">Files</label>
                 <input id="files" type="file" accept="image/*", multiple="true">
             </div>
@@ -53,6 +66,7 @@
     </footer>
 
     <!-- Shaders -->
+    <!-- TODO: move the vertex shader into a file -->
     <script id="quad_vs" src="src/gl/quad_vs.glsl" type="text/x-shader">
 attribute vec4 a_position;
 attribute vec2 a_tex_coord;

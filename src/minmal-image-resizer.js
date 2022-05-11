@@ -18,7 +18,7 @@ function gaussian_kernel_2d(sigma) {
     const radius = [Math.ceil(3 * sigma[0]), Math.ceil(3 * sigma[1])]
     const width = radius[0] * 2 + 1
     const height = radius[1] * 2 + 1
-    console.log(radius, width, height, width * height)
+
     const factor = 1 / (2 * Math.PI * sigma[0] * sigma[1])
     const exp_divisor = 2 * sigma[0] * sigma[1]
 
@@ -56,8 +56,6 @@ function gaussian(image, sigma) {
     }
 
     const kernel = gaussian_kernel_2d(sigma);
-
-    console.log("kernel", kernel, "sigma:", sigma)
 
     // Canvas setup ------------------------------------------------------------
     // TODO: keep a canvas on hand and initialise ahead of time
@@ -117,8 +115,6 @@ function gaussian(image, sigma) {
         image: textures.image
     };
 
-    console.log(uniforms);
-
     gl.useProgram(program_info.program);
     twgl.setBuffersAndAttributes(gl, program_info, buffer_info);
     twgl.setUniforms(program_info, uniforms);
@@ -150,6 +146,8 @@ class MinimalImageResizer {
         this.width_input = document.getElementById("width")
         this.height_input = document.getElementById("height")
         this.mode_input = document.getElementById("mode")
+        this.format_input = document.getElementById("format")
+        this.quality_input = document.getElementById("quality")
 
         this.output_container = document.getElementById("output-image-container")
 
@@ -157,6 +155,8 @@ class MinimalImageResizer {
         this.width_input.addEventListener("input", this.update_previews.bind(this))
         this.height_input.addEventListener("input", this.update_previews.bind(this))
         this.mode_input.addEventListener("input", this.update_previews.bind(this))
+        this.format_input.addEventListener("input", this.update_previews.bind(this))
+        this.quality_input.addEventListener("input", this.update_previews.bind(this))
 
         this.update_previews()
     }
@@ -175,6 +175,16 @@ class MinimalImageResizer {
 
     get_current_mode() {
         return this.mode_input.value
+    }
+
+    get_current_format() {
+        const f = this.format_input.value
+        return ["image/jpeg", "image/png"].includes(f) ? f : "image/jpeg"
+    }
+
+    get_current_quality() {
+        const q = this.quality_input.value
+        return q > 0 && q <= 1 ? q : 0.8
     }
 
     get_current_previews() {
@@ -280,10 +290,13 @@ class MinimalImageResizer {
         const z = new JSZip();
 
         const previews = this.get_current_previews();
+        const format = this.get_current_format()
+        const quality = this.get_current_quality()
 
         for (const p of previews) {
-            // TODO: make format and quality user-selectable
-            const [info, data] = p.toDataURL("image/jpg", 0.8).split(",")
+            const [info, data] = p.toDataURL(
+                format, quality
+            ).split(",")
             const [_, __, type, ___] = info.split(/[:/;]/)
             let filename = p.dataset.filename + "." + type
             z.file(filename, data, {base64: true});
