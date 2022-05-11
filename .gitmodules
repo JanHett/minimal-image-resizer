@@ -7,3 +7,6 @@
 [submodule "external/utif"]
 	path = external/utif
 	url = https://github.com/photopea/UTIF.js.git
+[submodule "external/pako"]
+	path = external/pako
+	url = https://github.com/nodeca/pako.git
