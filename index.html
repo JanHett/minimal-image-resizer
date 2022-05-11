@@ -42,19 +42,59 @@
 
     <div>
         <h2>Output images</h2>
+        <button onclick="__image_resizer.save_zip()">Save resized images</button>
         <div id="output-image-container">
             <p>No output available yet.</p>
         </div>
-        <button onclick="__image_resizer.save_zip()">Save resized images</button>
     </div>
 
     <footer>
         <p>Created by <a href="https://brotzeit.engineering/about/">Jan Hettenkofer</a> | Code on <a href="https://github.com/JanHett/minimal-image-resizer">GitHub</a></p>
     </footer>
 
+    <!-- Shaders -->
+    <script id="quad_vs" src="src/gl/quad_vs.glsl" type="text/x-shader">
+attribute vec4 a_position;
+attribute vec2 a_tex_coord;
+varying vec2 v_tex_coord;
 
+/**
+ * Taken from twgl docs
+ * Use with
+ * ```
+ * a_position = [
+ *     -1, -1, 0,
+ *      1, -1, 0,
+ *     -1,  1, 0,
+ *     -1,  1, 0,
+ *      1, -1, 0,
+ *      1,  1, 0
+ * ];
+ * 
+ *  a_tex_coord: [
+ *     0.0,  0.0,
+ *     1.0,  0.0,
+ *     0.0,  1.0,
+ *     0.0,  1.0,
+ *     1.0,  0.0,
+ *     1.0,  1.0,
+ * ]
+ * ````
+ */
+void main() {
+    gl_Position = a_position;
+    // flip the y coordinate around to images are right side up
+    v_tex_coord = vec2(a_tex_coord.x, 1. - a_tex_coord.y);
+}
+    </script>
+    <script src="src/gl/gaussian_fs.glsl"></script>
+
+    <!-- Libraries -->
+    <script src="external/twgl/dist/4.x/twgl-full.js"></script>
     <script src="external/jszip/dist/jszip.js"></script>
     <script src="external/jszip/vendor/FileSaver.js"></script>
+
+    <!-- Business logic -->
     <script src="src/minmal-image-resizer.js"></script>
 </body>
 
