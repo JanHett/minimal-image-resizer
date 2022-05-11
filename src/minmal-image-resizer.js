@@ -46,7 +46,7 @@ function gaussian_kernel_2d(sigma) {
  * Applies a gaussian filter with standard deviation `sigma` to `image` and
  * returns the result on a canvas
  * 
- * @param {HTMLImageElement} image
+ * @param {CanvasImageSource} image
  * @param {Number | [Number, Number]} sigma
  */
 function gaussian(image, sigma) {
@@ -201,6 +201,120 @@ class MinimalImageResizer {
         return this.output_container.querySelectorAll("canvas")
     }
 
+    /**
+     * Paint the CanvasImageSource `img` onto `editing_canvas`
+     */
+    _paint_canvas(editing_canvas, img, width, height) {
+        const editing_ctx = editing_canvas.getContext("2d")
+        editing_canvas.setAttribute("width", width)
+        editing_canvas.setAttribute("height", height)
+        editing_canvas.width = width;
+        editing_canvas.height = height;
+
+        const canvas_aspect = width / height
+        const image_aspect = img.width / img.height
+
+        const image_pos = (() => {
+            const m = this.get_current_mode()
+            let pos;
+            switch (m) {
+                case "cover":
+                    if (image_aspect > canvas_aspect) {
+                        pos = {
+                            width: height * image_aspect,
+                            height: height
+                        }
+                    } else {
+                        pos = {
+                            width: width,
+                            height: width / image_aspect
+                        }
+                    }
+
+                    pos.top = Math.abs(height - pos.height) / -2
+                    pos.left = Math.abs(width - pos.width) / -2
+
+                    return pos
+                case "contain":
+                    if (image_aspect > canvas_aspect) {
+                        pos = {
+                            width: width,
+                            height: width / image_aspect
+                        }
+                    } else {
+                        pos = {
+                            width: height * image_aspect,
+                            height: height
+                        }
+                    }
+
+                    pos.top = Math.abs(height - pos.height) / 2
+                    pos.left = Math.abs(width - pos.width) / 2
+
+                    return pos
+                case "exact":
+                    return {
+                        width,
+                        height,
+                        top: 0,
+                        left: 0,
+                    } 
+                default:
+                    throw Error("Invalid mode: " + m)
+            }
+        })()
+
+        const lpf_factor = this.get_current_lpf_factor()
+
+        let img_to_draw
+        if (lpf_factor > 0) {
+            img_to_draw = lpf_image_for_downsampling(img,
+            [image_pos.width, image_pos.height], lpf_factor)
+        } else {
+            img_to_draw = img
+        }
+
+        editing_ctx.drawImage(img_to_draw,
+            image_pos.left,
+            image_pos.top,
+            image_pos.width,
+            image_pos.height);
+    }
+
+    /**
+     * Load a FileObject into a CanvasImageSource
+     */
+    async _load_image(file_obj) {
+        return new Promise((resolve, reject) => {
+            // TIFFs aren't handled natively, so we need to construct the bitmap
+            // by hand
+            if (file_obj.name.endsWith(".tif")) {
+                const reader = new FileReader();
+                reader.onload = () => {
+                    const ifds = UTIF.decode(reader.result);
+                    UTIF.decodeImage(reader.result, ifds[0])
+                    const rgba = new Uint8ClampedArray(UTIF.toRGBA8(ifds[0]))
+    
+                    resolve(createImageBitmap(
+                        new ImageData(rgba, ifds[0].width, ifds[0].height),
+                        0, 0, ifds[0].width, ifds[0].height)
+                    )
+                }
+                reader.readAsArrayBuffer(file_obj)
+            } else {
+                const reader = new FileReader();
+                reader.onload = () => {
+                    const img = new Image();
+                    img.onload = () => {
+                        resolve(img)
+                    }
+                    img.src = reader.result;
+                };
+                reader.readAsDataURL(file_obj);
+            }
+        })
+    }
+
     update_previews() {
         const input_files = this.get_input_files()
         if (input_files.length === 0) {
@@ -210,7 +324,6 @@ class MinimalImageResizer {
         this.output_container.innerHTML = ""
         const width = this.get_current_width()
         const height = this.get_current_height()
-        const canvas_aspect = width / height
 
         for (const file_obj of input_files) {
             const editing_canvas = document.createElement("canvas");
@@ -218,88 +331,8 @@ class MinimalImageResizer {
             
             this.output_container.appendChild(editing_canvas)
 
-            const editing_ctx = editing_canvas.getContext("2d")
-
-            const reader = new FileReader();
-            reader.onload = () => {
-                const img = new Image();
-                img.onload = () => {
-                    editing_canvas.setAttribute("width", width)
-                    editing_canvas.setAttribute("height", height)
-                    editing_canvas.width = width;
-                    editing_canvas.height = height;
-
-                    const image_aspect = img.width / img.height
-
-                    const image_pos = (() => {
-                        const m = this.get_current_mode()
-                        let pos;
-                        switch (m) {
-                            case "cover":
-                                if (image_aspect > canvas_aspect) {
-                                    pos = {
-                                        width: height * image_aspect,
-                                        height: height
-                                    }
-                                } else {
-                                    pos = {
-                                        width: width,
-                                        height: width / image_aspect
-                                    }
-                                }
-
-                                pos.top = Math.abs(height - pos.height) / -2
-                                pos.left = Math.abs(width - pos.width) / -2
-
-                                return pos
-                            case "contain":
-                                if (image_aspect > canvas_aspect) {
-                                    pos = {
-                                        width: width,
-                                        height: width / image_aspect
-                                    }
-                                } else {
-                                    pos = {
-                                        width: height * image_aspect,
-                                        height: height
-                                    }
-                                }
-
-                                pos.top = Math.abs(height - pos.height) / 2
-                                pos.left = Math.abs(width - pos.width) / 2
-
-                                return pos
-                            case "exact":
-                                return {
-                                    width,
-                                    height,
-                                    top: 0,
-                                    left: 0,
-                                } 
-                            default:
-                                throw Error("Invalid mode: " + m)
-                        }
-                    })()
-
-                    const lpf_factor = this.get_current_lpf_factor()
-
-                    let img_to_draw
-                    if (lpf_factor > 0) {
-                        img_to_draw = lpf_image_for_downsampling(img,
-                        [image_pos.width, image_pos.height], lpf_factor)
-                    } else {
-                        img_to_draw = img
-                    }
-
-                    editing_ctx.drawImage(img_to_draw,
-                        image_pos.left,
-                        image_pos.top,
-                        image_pos.width,
-                        image_pos.height);
-                }
-                img.src = reader.result;
-            };
-            reader.readAsDataURL(file_obj);
+            this._load_image(file_obj)
+            .then(img => this._paint_canvas(editing_canvas, img, width, height))
         }
     }
 
