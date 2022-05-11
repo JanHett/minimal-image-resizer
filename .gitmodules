@@ -4,3 +4,6 @@
 [submodule "external/twgl"]
 	path = external/twgl
 	url = https://github.com/greggman/twgl.js.git
+[submodule "external/utif"]
+	path = external/utif
+	url = https://github.com/photopea/UTIF.js.git
