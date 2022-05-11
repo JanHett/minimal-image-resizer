@@ -31,11 +31,63 @@
                     <option value="contain">Contain</option>
                     <option value="exact">Exact</option>
                 </select>
+                <details>
+                    <summary>Learn more</summary>
+
+                    <h3>Resize modes</h3>
+
+                    <h4>Cover</h4>
+
+                    <p>
+                        If the input image does not fit the requested output
+                        dimensions exactly, it is scaled such that it completely
+                        covers the output window. If the image is taller than the
+                        frame, it would be cropped on the top and the bottom whereas
+                        an image that is wider than the frame would be cropped on
+                        the sides.
+                    </p>
+
+                    <h4>Contain</h4>
+
+                    <p>
+                        The input image is scaled to fit into the frame.
+                        Pixels on the sides or the top and bottom might be left
+                        blank.
+                    </p>
+
+
+                    <h4>Exact</h4>
+
+                    <p>
+                        The original aspect ratio is ignored and the image is
+                        stretched to the aspect ratio of the frame.
+                    </p>
+
+                </details>
             </div>
 
             <div>
-                <label for="lpf-factor">Low-pass filter factor (standard deviation for filter is <i>σ = 1 / (factor * scale)</i>, i.e. lower values lead to stronger filtering)</label>
+                <label for="lpf-factor">Low-pass filter factor:</label>
                 <input type="text" id="lpf-factor" placeholder="default: 4">
+                <details>
+                    <summary>Learn more</summary>
+
+                    <h3>Anti-aliasing filter factor</h3>
+
+                    <p>
+                        To avoid artefacts when scaling the input to smaller
+                        dimensions, the image is filtered with a gaussian blur. This
+                        operation removes detail ("high frequencies") from the
+                        picture that might otherwise produce stairstepping
+                        artefacts. Set this value to 0 if you are scaling up or if
+                        you want to disable the filter.
+                    </p>
+                    <p>
+                        The standard deviation for the filter is
+                        <i>σ = 1 / (factor * scale)</i>, i.e. lower values lead to
+                        stronger filtering.
+                    </p>
+                </details>
             </div>
 
             <div>
@@ -47,13 +99,43 @@
 
                 <label for="quality">Quality (ignored for PNG, legal values are [0, 1]):</label>
                 <input id="quality" type="text" placeholder="default: 0.8" pattern="[01](?:\.\d+)?">
+
+                <details>
+                    <summary>Learn more</summary>
+
+                    <h3>File formats</h3>
+
+                    <h4>JPEG</h4>
+
+                    <p>
+                        Standard format that is best suited to compressing
+                        photos. The compression employed is most useful when
+                        applied to the high frequencies often found in photos
+                        as opposed to graphics. The latter should not be encoded
+                        with JPEG since compression artefacts can become
+                        visible.
+                    </p><p>
+                        Use the quality setting to dial in your compromise
+                        between smaller files and quality.
+                    </p>
+
+                    <h4>PNG</h4>
+
+                    <p>
+                        File format best suited to losslessly compressing
+                        graphics and rasterized text. Can also be used if
+                        lossless encoding of images is required, but the
+                        resulting files will likely be larger than their JPEG
+                        equivalent.
+                    </p>
+                </details>
             </div>
 
             <h2>Input Data</h2>
 
             <div>
                 <label for="files">Files</label>
-                <input id="files" type="file" accept="image/*", multiple="true">
+                <input id="files" type="file" accept="image/*" , multiple="true">
             </div>
         </form>
     </div>
@@ -67,7 +149,8 @@
     </div>
 
     <footer>
-        <p>Created by <a href="https://brotzeit.engineering/about/">Jan Hettenkofer</a> | Code on <a href="https://github.com/JanHett/minimal-image-resizer">GitHub</a></p>
+        <p>Created by <a href="https://brotzeit.engineering/about/">Jan Hettenkofer</a> | Code on <a
+                href="https://github.com/JanHett/minimal-image-resizer">GitHub</a></p>
     </footer>
 
     <!-- Shaders -->
